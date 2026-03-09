@@ -30,7 +30,6 @@ def order_robots_from_RobotSpareBin():
         preview_robot()
         submit_order()
         
-        # New steps!
         # Pass the order number to the functions and save the returned paths
         pdf_path = store_receipt_as_pdf(row["Order number"])
         screenshot_path = screenshot_robot(row["Order number"])
@@ -49,7 +48,7 @@ def open_robot_order_website():
 
 def get_orders():
     """Downloads the orders CSV file, reads it into a table, and returns the result"""
-    # Overwrite=True ensures the robot can be run over and over safely
+    # Overwrite=True ensures the robot can be run over and over safely without having to delete files
     download("https://robotsparebinindustries.com/orders.csv", overwrite=True)
     
     # Instantiate the Tables library and read the CSV
@@ -89,11 +88,10 @@ def submit_order():
     """Submits the order and retries if the server throws an error"""
     page = browser.page()
     
-    # We use an infinite loop that only breaks when the receipt appears
+    # an infinite loop that only breaks when the receipt appears
     while True:
         page.click("#order")
         
-        # If the receipt appears, the order was successful
         if page.locator("#receipt").is_visible():
             break
         # If the error banner appears, the loop simply runs again and clicks "Order"
@@ -102,13 +100,11 @@ def store_receipt_as_pdf(order_number):
     """Extracts the HTML receipt and stores it as a PDF file"""
     page = browser.page()
     
-    # Get the raw HTML content of the receipt element
     receipt_html = page.locator("#receipt").inner_html()
     
-    # Define the output path using the order number
     pdf_path = f"output/receipts/{order_number}.pdf"
     
-    # Convert the HTML into a PDF file
+    # Convert HTML into PDF 
     pdf.html_to_pdf(receipt_html, pdf_path)
     
     return pdf_path
@@ -116,11 +112,8 @@ def store_receipt_as_pdf(order_number):
 def screenshot_robot(order_number):
     """Takes a screenshot of the robot image and saves it"""
     page = browser.page()
-    
-    # Define the output path for the screenshot
     screenshot_path = f"output/screenshots/{order_number}.png"
     
-    # Target just the robot image element and take a screenshot of it
     page.locator("#robot-preview-image").screenshot(path=screenshot_path)
     
     return screenshot_path
@@ -138,5 +131,5 @@ def embed_screenshot_to_receipt(screenshot, pdf_file):
 def archive_receipts():
     """Zips the receipt PDF files into a single archive"""
     lib = Archive()
-    # The first argument is the folder to zip, the second is the name of the output zip file
+    # 1st argument is the folder to zip, 2nd is the name of the output zip file
     lib.archive_folder_with_zip("output/receipts", "output/receipts.zip")
